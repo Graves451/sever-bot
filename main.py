@@ -1,6 +1,7 @@
 import discord
 import subprocess
 import psutil
+import os
 import datetime
 from discord.ext import commands,tasks
 
@@ -36,7 +37,8 @@ def get_server_stats():
     grep_out = subprocess.check_output("java -version",shell=True,stderr=subprocess.STDOUT).decode("utf-8")
     java_version = grep_out.split(" ")[2].replace('"','')
     server_data["java_version"] = java_version
-    server_data["core_count"] = psutil.cpu_count()
+    #logical is set to false so that it doesn't account for hyperthreading
+    server_data["core_count"] = psutil.cpu_count(logical = False)
     server_data["cpu_temp"] = psutil.sensors_temperatures()["coretemp"][0].current
     return server_data
 
@@ -76,11 +78,17 @@ async def stop_server(ctx):
 async def stats(ctx):
     grep_out = subprocess.check_output("top -b -n1",shell=True).decode("utf-8")
     stats = grep_out.split("\n")[7].split(" ")
-    cpu_load = stats[13]
-    ram_usage = stats[14]
-    Server_Embed = discord.Embed(colour=discord.Colour.red(),title="Server's status",description="**Sever Status** - ✅ Online")
-    Server_Embed.add_field(name="**CPU Usage**",value=f"{cpu_load}%")
-    Server_Embed.add_field(name="**RAM Usage**",value=f"{ram_usage}%")
+    #used to remove all the empty strings
+    stats[:] = (value for value in stats if value != '')
+    Server_Embed = discord.Embed(colour=discord.Colour.red(),title="Server's status",description=f"**Sever Status** - ❌ Offline")
+    cpu_load = "Unknown"
+    ram_usage = "Unknown"
+    if minecraft_server.get_status():
+        Server_Embed = discord.Embed(colour=discord.Colour.green(),title="Server's status",description=f"**Sever Status** - ✅ Online")
+        cpu_load = f"{stats[-4]}%"
+        ram_usage = f"{stats[-3]}%"
+    Server_Embed.add_field(name="**CPU Usage**",value=cpu_load)
+    Server_Embed.add_field(name="**RAM Usage**",value=ram_usage)
     Server_Embed.add_field(name="**CPU Cores**",value=server_data["core_count"])
     Server_Embed.add_field(name="**CPU Temp**",value=server_data["cpu_temp"])
     Server_Embed.add_field(name="**Total RAM**",value="7.7GB")
