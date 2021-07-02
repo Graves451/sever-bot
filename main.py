@@ -5,7 +5,7 @@ import os
 import datetime
 from discord.ext import commands,tasks
 
-Token = "NzA1NDk0ODc2ODM3NjQyMjcw.XqshTg.XBMKNMzfeoVUCcI4fqk6p9a92Rw"
+Token = "NzA1NDk0ODc2ODM3NjQyMjcw.XqshTg.dZ9r-uzyul74qiE24JMD7LLyn2I"
 
 class server:
     def __init__(self, start_bat, dir):
